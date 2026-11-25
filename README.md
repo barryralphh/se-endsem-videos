@@ -10,12 +10,13 @@ Only 5 videos (one per Unit). Numericals are never skipped. Every topic = diagra
 ## STATUS (update this table as you go - another AI continues from here)
 | Unit | Topic | Content file | Video |
 |---|---|---|---|
-| 4 | Software Testing | `content/U4_testing.py` | TODO |
-| 5 | Project Mgmt, Quality, Maintenance | `content/U5_pm_quality.py` | TODO |
+| 4 | Software Testing | `content/U4_testing.py` | content DONE (15 scenes), video: run workflow |
+| 5 | Project Mgmt, Quality, Maintenance | `content/U5_pm_quality.py` | content DONE (15 scenes), video: run workflow |
 | 1 | Intro, SDLC, Crisis, Agile vs Traditional, Structured vs OOAD | `content/U1_*.py` | TODO |
 | 2 | Requirements, SRS, ER, DFD, State, Use case | `content/U2_*.py` | TODO |
 | 3 | Coupling/Cohesion, Architecture, Process models | `content/U3_*.py` | TODO |
 
+Next step for any AI: write U1, U2, U3 content (copy structure of U4), run `python engine/render.py lint N`, commit, then dispatch workflow with `units`.
 Order asked by user: **Unit 4 and 5 first**, then 1, 2, 3.
 
 ## Theme
