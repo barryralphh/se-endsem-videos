@@ -19,6 +19,7 @@ jobs:
       matrix: ${{ steps.p.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+      - run: pip install pillow
       - id: p
         run: python3 engine/render.py plan "${{ github.event.inputs.units }}" "${{ github.event.inputs.chunks || '4' }}" >> $GITHUB_OUTPUT
   render:
