@@ -1,0 +1,73 @@
+name: build-se-videos
+on:
+  workflow_dispatch:
+    inputs:
+      units:
+        description: 'Units e.g. 4,5 (blank = all that exist)'
+        required: false
+        default: ''
+      chunks:
+        description: 'Parallel chunks per unit'
+        required: false
+        default: '4'
+permissions:
+  contents: write
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.p.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: p
+        run: python3 engine/render.py plan "${{ github.event.inputs.units }}" "${{ github.event.inputs.chunks || '4' }}" >> $GITHUB_OUTPUT
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core espeak-ng
+          pip install pillow edge-tts
+      - run: python engine/render.py chunk ${{ matrix.u }} ${{ matrix.k }} ${{ matrix.n }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seg-${{ matrix.u }}-${{ matrix.k }}
+          path: out/seg_${{ matrix.u }}_${{ matrix.k }}.mp4
+  merge:
+    needs: render
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip install pillow
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: seg-*
+          merge-multiple: true
+          path: out
+      - run: python engine/render.py merge-all
+      - name: push
+        run: |
+          git config user.name se-video-bot
+          git config user.email bot@users.noreply.github.com
+          git add videos
+          git commit -m 'videos' || exit 0
+          git pull --rebase
+          git push
